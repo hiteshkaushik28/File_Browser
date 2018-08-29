@@ -1,7 +1,7 @@
 CC = g++
 CFLAGS = -Wall -std=c++0x
-DEPS = listing.h module2.h
-OBJ = listing.o module2.o 
+DEPS = listing.h keypress.h
+OBJ = listing.o file.o keypress.o
 %.o: %.cpp $(DEPS)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
