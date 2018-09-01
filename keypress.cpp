@@ -53,10 +53,10 @@ int kbesc(void)
                 c = DOWN;
                 break;
             case 'C':
-                c = LEFT;
+                c = RIGHT;
                 break;
             case 'D':
-                c = RIGHT;
+                c = LEFT;
                 break;
             default:
                 c = 0;
@@ -76,5 +76,4 @@ int kbget(void)
     c = getch();
     return (c == ESCAPE) ? kbesc() : c;
 }
-
 

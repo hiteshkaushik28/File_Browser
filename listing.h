@@ -20,18 +20,29 @@
 #include <fcntl.h>
 #include <iomanip>
 #include <vector>
+#include <sys/ioctl.h>
 
 using namespace std;
 
 /* Global data structure for file names */
-extern vector<string>files;
-extern char enter[PATH_MAX];
+extern vector<string> files;
+extern stack<string> enter;
+extern stack<string> lft;
+extern stack<string> rght;
+extern struct winsize w;
 
 /* Function Declarations */
 void blank();
+void debug();
+void debug1();
+void debug2();
 void resetcursor();
 int getdir(char *);
-int dir_enter(int,char *);
+int left_enter();
+int right_enter();
+int dir_enter(int );
+int backspace();
+int command_mode();
 
 #endif
 

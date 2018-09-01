@@ -8,7 +8,42 @@
 
 #include "listing.h"
 
-vector<string>files;
+vector<string> files;
+stack<string> enter;
+stack<string> lft;
+stack<string> rght;
+struct winsize w;
+static string temp;
+static char abst[PATH_MAX];
+static int lines;
+
+void debug()
+{
+     printf("\033[21;1H" );
+     cout<<"enter:"<<enter.top()<<" "<<enter.size();
+     resetcursor();
+}
+
+void debug1()
+{
+    printf("\033[22;1H" );
+    if(lft.size() != 0)
+    {
+        cout<<"\nleft:"<<lft.top()<<" "<<lft.size();
+    }
+    resetcursor();
+}
+
+void debug2()
+{
+     printf("\033[23;1H" );
+     if(rght.size() != 0)
+    {
+        cout<<"\nright:"<<rght.top()<<" "<<rght.size();
+    }
+    resetcursor();
+     
+}
 
 //clear and reset terminal
 void blank()
@@ -59,7 +94,6 @@ int getdir (char *arr)
     
     vector<string>::iterator itr;
 
-    
     for(itr=files.begin();itr!=files.end();++itr)  
 
     {   
@@ -85,7 +119,7 @@ int getdir (char *arr)
             printf((fileStat.st_mode & S_IXOTH) ? "x" : "-");
 
             //output file properties
-            cout<<"\t"<<string(pw->pw_name)<<"\t"<<string(gr->gr_name)<<"\t"<<(int)fileStat.st_size<<"\t"<<string(ctime(&fileStat.st_mtime)).substr(4,12)<<"\t"<<string(*itr);
+            cout<<"\t"<<(string(pw->pw_name)).substr(0,7)<<"\t"<<(string(gr->gr_name)).substr(0,7)<<"\t"<<(int)fileStat.st_size<<"\t"<<string(ctime(&fileStat.st_mtime)).substr(4,12)<<"\t"<<string(*itr);
 
         } 
 
@@ -97,19 +131,118 @@ int getdir (char *arr)
         printf("\n");
     }
 
+resetcursor();
 return count;
 }
 
-
-int dir_enter(int pos,char *path)
+int dir_enter(int pos)
 {
-	int lines;
-    char abs[PATH_MAX],name[PATH_MAX];
-    strcpy(abs,path);
-    strcat(abs,"/");
-    strcpy(name,files[pos].c_str());
-    strcat(abs,name);
-    lines = getdir(abs);
-    resetcursor();
+      
+    if(enter.size() == 1)
+    {
+        if(files[pos] == ".")
+        {
+            return -1;
+        }
+        else if(files[pos] == "..")
+        {
+            resetcursor();
+            return -2;
+        }
+        else
+        {   
+            temp = enter.top();
+            lft.push(temp);
+            temp+="/";
+            temp+=files[pos].c_str();
+            enter.push(temp);
+            strcpy(abst,temp.c_str());
+            lines = getdir(abst);
+        }
+
+     }
+
+     else
+     {
+        if(files[pos] == ".")
+        {
+            return -1;
+        }
+
+        else if(files[pos] == "..")
+        {
+            enter.pop();
+            temp = enter.top();
+            strcpy(abst,temp.c_str());
+            lines = getdir(abst);
+
+        }
+
+        else
+        {
+            lft.push(temp);
+            temp = enter.top();
+            temp+="/";
+            temp+=files[pos].c_str();
+            enter.push(temp);
+            strcpy(abst,temp.c_str());
+            lines = getdir(abst);
+        }
+
+     }
+     /*debug();
+     debug1();
+     debug2();*/
     return lines;
 }
+
+int left_enter()
+{
+  rght.push(enter.top());  
+  temp = lft.top();
+  lft.pop();
+  if(enter.size() > 1)
+    enter.pop();
+  strcpy(abst,temp.c_str());
+  lines = getdir(abst);
+  /*debug();
+  debug1();
+  debug2();*/
+  return lines; 
+}
+
+int right_enter()
+{
+  lft.push(enter.top());
+  enter.push(rght.top());
+  temp = rght.top();
+  rght.pop();
+  strcpy(abst,temp.c_str());
+  lines = getdir(abst);
+  /*debug();
+  debug1();
+  debug2();*/
+  return lines; 
+}
+
+int backspace()
+{
+    lft.push(enter.top());
+    enter.pop();
+    temp = enter.top();
+    strcpy(abst,temp.c_str());
+    lines = getdir(abst);
+    return lines; 
+}
+
+int command_mode()
+{
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    printf("\033[%d;1H",w.ws_row);
+    printf("\033[30;");
+    printf("47m");
+    printf("Command Line:");
+    printf("\033[0m");
+    return 1;
+}
+
