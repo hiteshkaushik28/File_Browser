@@ -244,7 +244,7 @@ void command_prompt()
 
 int command_mode()
 {
-   int ret;
+   int ret = -1;
    command_prompt(); 
    char input[256],*tok;
     
@@ -315,7 +315,7 @@ int command_process()
 
         }
     }
-    else// if (strcmp((tokens[0]).c_str(),"goto") == 0)
+    else if (strcmp((tokens[0]).c_str(),"goto") == 0)
     {
         getcwd(temp1, sizeof(temp1));
         strcat(temp1,"/");
@@ -323,10 +323,115 @@ int command_process()
         t = getdir(temp1);
         command_prompt();
     }
-    
-return t;
+    else if (strcmp((tokens[0]).c_str(),"rename") == 0)
+    {
+        strcpy(temp1,(enter.top()).c_str());
+        strcat(temp1,"/");
+        strcat(temp1,(tokens[1].c_str()));
+
+        strcpy(temp2,(enter.top()).c_str());
+        strcat(temp2,"/");
+        strcat(temp2,(tokens[2].c_str()));
+
+        renamefile(temp1,temp2);
+        strcpy(temp3,(enter.top()).c_str());
+        t = getdir(temp3);
+    }
+
+    else if (strcmp((tokens[0]).c_str(),"deletefile") == 0)
+    {
+        strcpy(temp1,(enter.top()).c_str());
+        strcat(temp1,"/");
+        strcat(temp1,(tokens[1].c_str()));
+        removefile(temp1);
+        strcpy(temp3,(enter.top()).c_str());
+        t = getdir(temp3);
+    }
+
+    else if (strcmp((tokens[0]).c_str(),"createdir") == 0)
+    {
+        strcpy(temp1,(enter.top()).c_str());
+        strcat(temp1,"/");
+        strcat(temp1,(tokens[1].c_str()));
+        createdir(temp1,0700);
+        strcpy(temp3,(enter.top()).c_str());
+        t = getdir(temp3);
+    }
+
+    else if (strcmp((tokens[0]).c_str(),"movefile") == 0)
+    {
+       for(unsigned int i=1;i<(l-1);++i)
+        {
+            strcpy(temp1,(enter.top()).c_str());   
+            strcat(temp1,"/");
+            strcat(temp1,(tokens[i].c_str())); 
+
+            getcwd(temp2, sizeof(temp2));
+            strcat(temp2,"/");
+            strcat(temp2,(tokens[l-1].c_str()));
+            strcpy(temp3,temp2);
+            strcat(temp2,"/");
+            strcat(temp2,(tokens[i].c_str()));            
+            cp(temp1,temp2);
+            removefile(temp1);
+            t = getdir(temp3);
+
+        }
+    }
+
+    else if (strcmp((tokens[0]).c_str(),"createfile") == 0)
+    {
+        
+        strcpy(temp1,(enter.top()).c_str());
+        strcpy(temp3,temp1);
+        strcat(temp1,"/");
+        strcat(temp1,(tokens[1].c_str()));
+        createfile(temp1);
+        t = getdir(temp3);
+    }
+
+    else
+    {
+        char c;
+        blank();
+        cout<<"Invalid command";
+        fflush(stdin);
+        c = getchar();
+        strcpy(temp1,(enter.top()).c_str());
+         t = getdir(temp1);
+    }
+
+    return t;
 }
 
+/* create file */
+void createfile(char first[])
+{
+    /*file can only be created in present directory to handle permission issues*/
+    fopen(first,"w+");
+}
+
+/* create directory */
+void createdir(char first[],int perm)
+{
+    mkdir(first,perm);
+}
+
+/* remove file */
+void removefile(char first[])
+{
+    remove(first);
+}
+
+
+/* rename file */
+void renamefile(char first[],char second[])
+{
+    rename(first,second);
+}
+
+
+/* copy file */
 void cp(char *source,char *destination)
 {
  

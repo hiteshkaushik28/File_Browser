@@ -48,6 +48,10 @@ void command_prompt();
 int command_process();
 void cp(char *,char *);
 void err(char *, char *);
+void renamefile(char [],char []);
+void removefile(char []);
+void createdir(char[],int);
+void createfile(char[]);
 #endif
 
 

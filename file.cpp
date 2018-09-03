@@ -118,7 +118,8 @@ int main()
 
     else
     {
-        d = command_mode();
+        t = command_mode();
+        d = (t> 0)?t:d;
         mode_flag = false;
         down_count=1;
         resetcursor();

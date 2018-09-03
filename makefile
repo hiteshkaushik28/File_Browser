@@ -1,4 +1,4 @@
-CC = g++
+CC = g++ -w
 CFLAGS = -Wall -std=c++0x
 DEPS = listing.h keypress.h
 OBJ = listing.o file.o keypress.o
