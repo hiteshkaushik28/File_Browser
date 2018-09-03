@@ -29,6 +29,7 @@ extern vector<string> files;
 extern stack<string> enter;
 extern stack<string> lft;
 extern stack<string> rght;
+extern vector<string> tokens;
 extern struct winsize w;
 
 /* Function Declarations */
@@ -43,7 +44,10 @@ int right_enter();
 int dir_enter(int );
 int backspace();
 int command_mode();
-
+void command_prompt();
+int command_process();
+void cp(char *,char *);
+void err(char *, char *);
 #endif
 
 

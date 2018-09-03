@@ -9,14 +9,11 @@
 #include "listing.h"
 #include "keypress.h"
 
-
-bool home_flag = false;
+bool mode_flag = false;
 int main()
 {	
     char path[PATH_MAX];
     int d;
-	//int entry_count=0;
-	// reset and clear terminal
 	blank();
 	
 	// list files and directories
@@ -25,6 +22,7 @@ int main()
         d=getdir(path);
         string tmp(path);
         enter.push(tmp);
+        resetcursor();
     }
 
     else 
@@ -38,85 +36,95 @@ int main()
     int c,t,down_count = 1; 
     while (1) 
     {
-        c = kbget();
-        if (c == QUIT)
-        { 
-            blank();
-            break;
-        }
-        
-        else if (c == UP && down_count > 1)
-        {
-            up(1);      
-            down_count--;
-        }
+       if(mode_flag == false)
+       {
+            c = kbget();
 
-        else if (c == DOWN && down_count < d) 
-        {
-            down_count++;
-            down(1);
-   
-        }
+            if (c == QUIT)
+            { 
+                blank();
+                break;
+            }
+            
+            else if (c == UP && down_count > 1)
+            {
+                up(1);      
+                down_count--;
+            }
 
-        else if (c == ENTER) 
-        {
-            t = dir_enter(down_count-1);
-            d=(t>=0)?t:d;
-            down_count=1;
-        }
+            else if (c == DOWN && down_count < d) 
+            {
+                down_count++;
+                down(1);
+       
+            }
 
-        else if (c == LEFT) 
-        {
+            else if (c == ENTER) 
+            {
+                t = dir_enter(down_count-1);
+                d=(t>=0)?t:d;
+                down_count=1;
+                resetcursor();
+            }
+
+            else if (c == LEFT) 
+            {
                 if(lft.size() == 0)
                     continue;
                 else
                     d = left_enter();
-        }
+                resetcursor();
+            }
 
-        else if (c == RIGHT) 
-        {
+            else if (c == RIGHT) 
+            {
                 if(rght.size() == 0)
                     continue;
                 else
                     d = right_enter();
-        }
+                resetcursor();
+            }
 
-        else if (c == HOME) 
-        {
-                
+            else if (c == HOME) 
+            {
+                    
                 if(enter.size() == 1)
                     continue;
                 else
                 {
-                    home_flag = true;
                     lft.push(enter.top());
                     enter.push(path);
                     d = getdir(path);
-                    /*debug();
-                    debug1();
-                    debug2();*/
                 }
-        }
+                resetcursor();
+            }
 
-        else if(c == BACKSPACE)
-        {  
-            if(enter.size() <= 1)
-                continue;
-            else 
-                d = backspace();
-            /*debug();
-            debug1();
-            debug2();*/
-        }
+            else if(c == BACKSPACE)
+            {  
+                if(enter.size() <= 1)
+                    continue;
+                else 
+                    d = backspace();
+                resetcursor();
+            }
 
-        else if(c == COLON)
-        {
-            command_mode();
-        }
-
-        else continue; 
+            else if(c == COLON)
+            {
+               mode_flag = true;   
+            }
+       
+       else continue; 
     }
-    
+
+    else
+    {
+        d = command_mode();
+        mode_flag = false;
+        down_count=1;
+        resetcursor();
+    }
+
+    }
 
 	return 0;
 }

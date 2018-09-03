@@ -7,7 +7,8 @@
 #include "keypress.h"
 
 struct termios term, oterm;
-int getch(void)
+
+int gett(void)
 {
     int c = 0;
 
@@ -43,9 +44,9 @@ int kbesc(void)
     int c;
 
     if (!kbhit()) return ESCAPE;
-    c = getch();
+    c = gett();
     if (c == '[') {
-        switch (getch()) {
+        switch (gett()) {
             case 'A':
                 c = UP;
                 break;
@@ -62,10 +63,11 @@ int kbesc(void)
                 c = 0;
                 break;
         }
-    } else {
+    }
+    else {
         c = 0;
     }
-    if (c == 0) while (kbhit()) getch();
+    if (c == 0) while (kbhit()) gett();
     return c;
 }
 
@@ -73,7 +75,7 @@ int kbget(void)
 {
     int c;
 
-    c = getch();
+    c = gett();
     return (c == ESCAPE) ? kbesc() : c;
 }
 

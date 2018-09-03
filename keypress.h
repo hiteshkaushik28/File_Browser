@@ -27,7 +27,7 @@
 #define HOME    		'h' || c == 'H'
 #define COLON			58
 
-int getch(void);
+int gett(void);
 int kbhit(void);
 int kbesc(void);
 int kbget(void);
