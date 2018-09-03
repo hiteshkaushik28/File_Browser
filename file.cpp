@@ -12,7 +12,7 @@
 bool mode_flag = false;
 int main()
 {	
-    char path[PATH_MAX];
+    char path[PATH_MAX],file[PATH_MAX];
     int d;
 	blank();
 	
@@ -87,15 +87,9 @@ int main()
 
             else if (c == HOME) 
             {
-                    
-                if(enter.size() == 1)
-                    continue;
-                else
-                {
-                    lft.push(enter.top());
-                    enter.push(path);
-                    d = getdir(path);
-                }
+                lft.push(enter.top());
+                enter.push(path);
+                d = getdir(path);
                 resetcursor();
             }
 

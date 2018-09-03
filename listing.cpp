@@ -19,34 +19,6 @@ static string temp;
 static char abst[PATH_MAX];
 static int lines;
 
-/*
-void debug()
-{
-     printf("\033[21;1H" );
-     cout<<"enter:"<<enter.top()<<" "<<enter.size();
-     resetcursor();
-}
-
-void debug1()
-{
-    printf("\033[22;1H" );
-    if(lft.size() != 0)
-    {
-        cout<<"\nleft:"<<lft.top()<<" "<<lft.size();
-    }
-    resetcursor();
-}
-
-void debug2()
-{
-     printf("\033[23;1H" );
-     if(rght.size() != 0)
-    {
-        cout<<"\nright:"<<rght.top()<<" "<<rght.size();
-    }
-    resetcursor();
-     
-}*/
 
 //clear and reset terminal
 void blank()
@@ -57,7 +29,7 @@ void blank()
 //reset cursor to top left position
 void resetcursor()
 {
-    printf("\033[1;1H" );
+    printf("\033[2;1H" );
 }
 
 
@@ -94,9 +66,16 @@ int getdir (char *arr)
 
     //sort file name in lex order
     sort(files.begin(),files.end());
+        
+    printf("%c[2K", 27);
+    printf("\033[30;");
+    printf("47m");
+    printf("PERMISSIONS\tOWNER\tGROUP\tSIZE\tDATE MODIFIED\tNAME   ");
+    printf("\033[0m");
+    printf("\n");
     
-    vector<string>::iterator itr;
 
+    vector<string>::iterator itr;
     for(itr=files.begin();itr!=files.end();++itr)  
 
     {   
@@ -122,13 +101,19 @@ int getdir (char *arr)
             printf((fileStat.st_mode & S_IXOTH) ? "x" : "-");
 
             //output file properties
-            cout<<"\t"<<(string(pw->pw_name)).substr(0,7)<<"\t"<<(string(gr->gr_name)).substr(0,7)<<"\t"<<(int)fileStat.st_size<<"\t"<<string(ctime(&fileStat.st_mtime)).substr(4,12)<<"\t"<<string(*itr);
+            cout<<"\t"<<(string(pw->pw_name)).substr(0,7)<<"\t"<<(string(gr->gr_name)).substr(0,7);
+            printf("\t%d",(int)fileStat.st_size);
+            cout<<"\t"<<string(ctime(&fileStat.st_mtime)).substr(4,12);
+            printf("\t%.20s",(string(*itr)).c_str());
 
         } 
 
         else
         {
-            perror("stat method failed");
+            char c;
+            blank();
+            perror("Method failed to load stats");
+            c=getchar();
         }
       
         printf("\n");
@@ -140,6 +125,29 @@ return count;
 
 int dir_enter(int pos)
 {
+    char file[PATH_MAX],dump[PATH_MAX];
+    getcwd(dump, sizeof(dump));
+    struct stat check;
+    strcpy(file,dump);
+    strcat(file,"/");
+    strcat(file,(files[pos]).c_str());
+    stat(file,&check);
+    pid_t pid;
+
+    if(!(S_ISDIR(check.st_mode)))
+    {
+        pid=fork();
+        if(pid==0)
+        {
+            execl("/usr/bin/xdg-open","xdg-open",file, (char *)0);
+            
+        }
+
+        return -1;
+    }
+
+    else
+    {
       
     if(enter.size() == 1)
     {
@@ -193,7 +201,9 @@ int dir_enter(int pos)
         }
 
      }
-    return lines;
+      return lines;
+    }
+   
 }
 
 int left_enter()
@@ -252,6 +262,7 @@ int command_mode()
     
     while((ch = kbget()) != ESCAPE)
     {
+        fflush(stdin);
         if(ch == BACKSPACE)
         {
             if(i>0)
@@ -265,6 +276,7 @@ int command_mode()
 
         else if (ch == ENTER)
         {
+            fflush(stdin);
             i=0;
             tokens.clear();
             command_prompt();
@@ -307,9 +319,10 @@ int command_process()
             getcwd(temp2, sizeof(temp2));
             strcat(temp2,"/");
             strcat(temp2,(tokens[l-1].c_str()));
+            enter.push(string(temp2));
             strcpy(temp3,temp2);
             strcat(temp2,"/");
-            strcat(temp2,(tokens[i].c_str()));            
+            strcat(temp2,(tokens[i].c_str()));     
             cp(temp1,temp2);
             t = getdir(temp3);
 
@@ -343,16 +356,19 @@ int command_process()
         strcpy(temp1,(enter.top()).c_str());
         strcat(temp1,"/");
         strcat(temp1,(tokens[1].c_str()));
+        strcat(temp1,"\0");
         removefile(temp1);
         strcpy(temp3,(enter.top()).c_str());
+        strcat(temp3,"\0");
         t = getdir(temp3);
     }
 
-    else if (strcmp((tokens[0]).c_str(),"createdir") == 0)
+    else if (strcmp((tokens[0]).c_str(),"create_dir") == 0)
     {
         strcpy(temp1,(enter.top()).c_str());
         strcat(temp1,"/");
         strcat(temp1,(tokens[1].c_str()));
+        strcat(temp1,"\0");
         createdir(temp1,0700);
         strcpy(temp3,(enter.top()).c_str());
         t = getdir(temp3);
@@ -365,13 +381,16 @@ int command_process()
             strcpy(temp1,(enter.top()).c_str());   
             strcat(temp1,"/");
             strcat(temp1,(tokens[i].c_str())); 
+            strcat(temp1,"\0");
 
             getcwd(temp2, sizeof(temp2));
             strcat(temp2,"/");
             strcat(temp2,(tokens[l-1].c_str()));
             strcpy(temp3,temp2);
+            strcat(temp3,"\0");
             strcat(temp2,"/");
-            strcat(temp2,(tokens[i].c_str()));            
+            strcat(temp2,(tokens[i].c_str()));   
+            strcat(temp2,"\0");         
             cp(temp1,temp2);
             removefile(temp1);
             t = getdir(temp3);
@@ -384,8 +403,10 @@ int command_process()
         
         strcpy(temp1,(enter.top()).c_str());
         strcpy(temp3,temp1);
+        strcat(temp3,"\0");
         strcat(temp1,"/");
         strcat(temp1,(tokens[1].c_str()));
+        strcat(temp1,"\0");
         createfile(temp1);
         t = getdir(temp3);
     }
@@ -394,7 +415,7 @@ int command_process()
     {
         char c;
         blank();
-        cout<<"Invalid command";
+        cout<<"Invalid command!!! Press any key to continue";
         fflush(stdin);
         c = getchar();
         strcpy(temp1,(enter.top()).c_str());
